@@ -1,8 +1,38 @@
 const { test, expect } = require('@playwright/test');
 
-// MISSION 4 — Mock the first /api/stations GET as 503, confirm the error banner,
-// then let Retry loading reach the real server and recover to 4 stations.
+test('station list recovers after an API outage', async ({ page }) => {
+  let attempts = 0;
 
-test.skip('station API outage shows an error and retry restores results', async ({ page }) => {
-  // TODO
+  await page.route('**/api/stations', async route => {
+    if (route.request().method() !== 'GET') {
+      await route.continue();
+      return;
+    }
+
+    attempts++;
+
+    if (attempts === 1) {
+      await route.fulfill({
+        status: 503,
+        json: { error: 'Service unavailable' }
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  await page.goto('/');
+
+  const alert = page.getByRole('alert').filter({
+    hasText: 'Unable to load stations.'
+  });
+  await expect(alert).toBeVisible();
+
+  await page.getByRole('button', {
+    name: 'Retry loading',
+    exact: true
+  }).click();
+
+  await expect(page.getByTestId('station-card')).toHaveCount(4);
+  await expect(alert).toBeHidden();
 });
