@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: 02-availability.spec.js >> BUG-101: available-only filter excludes zero-bike stations
-- Location: tests\02-availability.spec.js:3:1
+- Name: 01-smoke.spec.js >> dashboard loads with four stations
+- Location: tests\01-smoke.spec.js:3:1
 
 # Error details
 
@@ -15,7 +15,7 @@
 Error: expect(locator).toHaveCount(expected) failed
 
 Locator:  getByTestId('station-card')
-Expected: 3
+Expected: 5
 Received: 4
 Timeout:  5000ms
 
@@ -46,7 +46,7 @@ Call log:
         - generic [ref=e14]: Search stations
         - searchbox "Search stations" [ref=e15]
         - generic [ref=e16]:
-          - checkbox "Available bikes only" [checked] [active] [ref=e17]
+          - checkbox "Available bikes only" [ref=e17]
           - text: Available bikes only
       - generic [ref=e18]:
         - article [ref=e19]:
@@ -78,25 +78,18 @@ Call log:
 ```ts
   1  | const { test, expect } = require('@playwright/test');
   2  | 
-  3  | test('BUG-101: available-only filter excludes zero-bike stations', async ({ page }) => {
+  3  | test('dashboard loads with four stations', async ({ page }) => {
   4  |   await page.goto('/');
-  5  | 
-  6  |   const stations = page.getByTestId('station-card');
-  7  |   const riverside = page.getByRole('heading', {
-  8  |     name: 'Riverside Park',
-  9  |     exact: true
-  10 |   });
-  11 | 
-  12 |   await expect(stations).toHaveCount(4);
-  13 |   await expect(riverside).toBeVisible();
-  14 | 
-  15 |   await page.getByRole('checkbox', {
-  16 |     name: 'Available bikes only'
-  17 |   }).check();
-  18 | 
-> 19 |   await expect(stations).toHaveCount(3);
-     |                          ^ Error: expect(locator).toHaveCount(expected) failed
-  20 |   await expect(riverside).toHaveCount(0);
-  21 | });
-  22 | 
+  5  |   await expect(page.getByRole('heading', { name: 'Find your next bike' })).toBeVisible();
+> 6  |   await expect(page.getByTestId('station-card')).toHaveCount(5);
+     |                                                  ^ Error: expect(locator).toHaveCount(expected) failed
+  7  | });
+  8  | 
+  9  | test('search narrows station list', async ({ page }) => {
+  10 |   await page.goto('/');
+  11 |   await page.getByRole('searchbox', { name: 'Search stations' }).fill('Central');
+  12 |   await expect(page.getByTestId('station-card')).toHaveCount(1);
+  13 |   await expect(page.getByRole('heading', { name: 'Central Square' })).toBeVisible();
+  14 | });
+  15 | 
 ```
