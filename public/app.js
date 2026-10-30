@@ -28,7 +28,7 @@ function renderStations() {
   const term = ui.search.value.trim().toLowerCase();
   const result = stations.filter(s => {
     if (!s.name.toLowerCase().includes(term)) return false;
-    if (ui.available.checked && s.bikes < 0) return false;
+    if (ui.available.checked && s.bikes <= 0) return false;
     return true;
   });
   ui.count.textContent = `${result.length} station${result.length === 1 ? '' : 's'}`;
